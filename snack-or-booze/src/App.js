@@ -6,20 +6,41 @@ import SnackOrBoozeApi from "./Api";
 import NavBar from "./NavBar";
 import { Route, Switch } from "react-router-dom";
 import Menu from "./FoodMenu";
-import Snack from "./FoodItem";
+import FoodItem from "./FoodItem";
+import AddFood from "./AddFood";
+import PageNotFound from './PageNotFound'
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
-  const [snacks, setSnacks] = useState([]);
+  const [foods, setSnacks] = useState([]);
+  const [drinks, setDrinks] = useState([]);
 
   useEffect(() => {
-    async function getSnacks() {
-      let snacks = await SnackOrBoozeApi.getSnacks();
+    async function getFoods() {
+      let snacks = await SnackOrBoozeApi.getFoods();
+      let drinks = await SnackOrBoozeApi.getDrinks();
       setSnacks(snacks);
+      setDrinks(drinks);
       setIsLoading(false);
     }
-    getSnacks();
+    getFoods();
   }, []);
+
+  const addFood = (food) => {
+    food = {
+      ...food,
+      "id": food.name
+    }
+    if (food.foodType==="food") {
+      let newFood = foods;
+      newFood.push(food)
+      setSnacks(newFood)
+    } else {
+      let newDrinks = drinks;
+      newDrinks.push(food)
+      setDrinks(newDrinks)
+    }
+  }
 
   if (isLoading) {
     return <p>Loading &hellip;</p>;
@@ -32,16 +53,22 @@ function App() {
         <main>
           <Switch>
             <Route exact path="/">
-              <Home snacks={snacks} />
+              <Home snacks={foods} />
             </Route>
             <Route exact path="/snacks">
-              <Menu snacks={snacks} title="Snacks" />
+              <Menu food={foods} title="Snacks" />
+            </Route>
+            <Route exact path="/drinks">
+              <Menu food={drinks} title="Drinks" />
             </Route>
             <Route path="/snacks/:id">
-              <Snack items={snacks} cantFind="/snacks" />
+              <FoodItem items={foods} cantFind="/snacks" />
             </Route>
-            <Route>
-              <p>Hmmm. I can't seem to find what you want.</p>
+            <Route path="/addfood" >
+              <AddFood  onHandle={addFood} />
+            </Route>
+            <Route >
+              <PageNotFound />
             </Route>
           </Switch>
         </main>
